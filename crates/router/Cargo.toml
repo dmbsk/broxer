@@ -1,0 +1,20 @@
+[package]
+name = "broxer"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "broxer"
+path = "src/main.rs"
+
+[[bin]]
+name = "fake-browser"
+path = "tests/support/fake_browser.rs"
+test = false
+
+[dependencies]
+broxer-core.workspace = true
+broxer-platform.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

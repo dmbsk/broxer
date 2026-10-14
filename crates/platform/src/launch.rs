@@ -52,6 +52,13 @@ fn command(path: &Path, args: &[String], url: &str) -> Command {
 fn direct(path: &Path, args: &[String], url: &str) -> Command {
     let mut command = Command::new(path);
     command.args(args).arg(url);
+    // The router has no console, so a console-subsystem target would get a fresh conhost (~20 ms, visible flash).
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
     command
 }
 
