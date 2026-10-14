@@ -58,6 +58,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "broxer-settings"
+version = "0.1.0"
+dependencies = [
+ "broxer-core",
+ "broxer-platform",
+ "dirs",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

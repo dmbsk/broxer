@@ -1,0 +1,9 @@
+[package]
+name = "broxer-settings"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+broxer-core.workspace = true
+broxer-platform.workspace = true
+dirs.workspace = true
