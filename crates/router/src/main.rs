@@ -26,6 +26,15 @@ fn route_url(url: &str) {
     );
 }
 
+#[cfg(target_os = "macos")]
+mod macos;
+
+#[cfg(target_os = "macos")]
+fn no_url() {
+    macos::run();
+}
+
+#[cfg(not(target_os = "macos"))]
 fn no_url() {
     open_settings();
 }
