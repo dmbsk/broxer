@@ -37,6 +37,14 @@ fn run(program: &str, args: &[&str]) -> io::Result<()> {
     }
 }
 
+fn remembered_default(current: &str) -> Option<String> {
+    todo!()
+}
+
+fn restore_commands(previous: &str) -> Vec<(&'static str, Vec<String>)> {
+    todo!()
+}
+
 fn desktop_entry(router: &Path) -> String {
     format!(
         "[Desktop Entry]\n\
@@ -55,6 +63,28 @@ fn desktop_entry(router: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn previous_default_is_remembered_unless_it_is_broxer() {
+        assert_eq!(remembered_default("firefox.desktop\n"), Some("firefox.desktop".into()));
+        assert_eq!(remembered_default("broxer.desktop\n"), None);
+        assert_eq!(remembered_default("  \n"), None);
+    }
+
+    #[test]
+    fn unregister_restores_previous_default_for_both_tools() {
+        let as_strings = |args: &[&str]| args.iter().map(|a| a.to_string()).collect::<Vec<_>>();
+        assert_eq!(
+            restore_commands("firefox.desktop"),
+            vec![
+                ("xdg-settings", as_strings(&["set", "default-web-browser", "firefox.desktop"])),
+                (
+                    "xdg-mime",
+                    as_strings(&["default", "firefox.desktop", "x-scheme-handler/http", "x-scheme-handler/https"])
+                ),
+            ]
+        );
+    }
 
     #[test]
     fn desktop_entry_handles_web_links_and_quotes_exec() {

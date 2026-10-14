@@ -96,6 +96,38 @@ mod tests {
         assert!(err.to_string().contains("Broxer itself"), "{err}");
     }
 
+    #[cfg(target_os = "macos")]
+    fn fake_app(dir: &Path) -> std::path::PathBuf {
+        let app = dir.join("Fake.app");
+        std::fs::create_dir_all(app.join("Contents/MacOS")).unwrap();
+        std::fs::write(
+            app.join("Contents/Info.plist"),
+            r#"<?xml version="1.0"?><plist version="1.0"><dict>
+            <key>CFBundleExecutable</key><string>fake-bin</string></dict></plist>"#,
+        )
+        .unwrap();
+        app
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn app_with_args_runs_bundle_executable_so_running_browser_gets_them() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = fake_app(dir.path());
+        let command = command(&app, &["--profile-directory=Profile 2".into()], "https://x.dev/");
+        assert_eq!(command.get_program(), app.join("Contents/MacOS/fake-bin").as_os_str());
+        let args: Vec<_> = command.get_args().collect();
+        assert_eq!(args, ["--profile-directory=Profile 2", "https://x.dev/"]);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn app_without_args_uses_open() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = fake_app(dir.path());
+        assert_eq!(command(&app, &[], "https://x.dev/").get_program(), "/usr/bin/open");
+    }
+
     #[test]
     fn missing_absolute_path_is_not_found() {
         let dir = tempfile::tempdir().unwrap();
