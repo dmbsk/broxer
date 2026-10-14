@@ -4,8 +4,21 @@ on:
   push:
     tags: ["v*"]
 
+permissions:
+  contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --generate-notes
+
+  # Uploads straight to the release: workflow artifacts count against the account's storage quota.
   build:
+    needs: create
     strategy:
       matrix:
         include:
@@ -37,20 +50,4 @@ jobs:
         run: |
           cargo build --release -p broxer -p broxer-settings
           tar -czf ${{ matrix.asset }} -C target/release broxer broxer-settings
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.asset }}
-          path: ${{ matrix.asset }}
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-      - run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --generate-notes broxer-*
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - run: gh release upload "${{ github.ref_name }}" "${{ matrix.asset }}" --repo "${{ github.repository }}"
