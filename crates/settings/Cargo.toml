@@ -7,6 +7,8 @@ edition.workspace = true
 broxer-core.workspace = true
 broxer-platform.workspace = true
 dirs.workspace = true
+eframe = "0.32"
+rfd = { version = "0.15", default-features = false, features = ["xdg-portal", "tokio"] }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
