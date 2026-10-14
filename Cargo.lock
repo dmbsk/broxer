@@ -497,7 +497,7 @@ dependencies = [
 
 [[package]]
 name = "broxer"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "broxer-core",
  "broxer-platform",
@@ -509,7 +509,7 @@ dependencies = [
 
 [[package]]
 name = "broxer-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "serde",
  "tempfile",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "broxer-platform"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "broxer-core",
  "dirs",
@@ -531,7 +531,7 @@ dependencies = [
 
 [[package]]
 name = "broxer-settings"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "broxer-core",
  "broxer-platform",
@@ -539,6 +539,7 @@ dependencies = [
  "dirs",
  "eframe",
  "rfd",
+ "windows-sys 0.60.2",
  "winreg",
 ]
 

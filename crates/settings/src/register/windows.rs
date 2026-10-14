@@ -10,12 +10,23 @@ pub const AFTER_REGISTER: &str =
 const CLIENT_KEY: &str = r"Clients\StartMenuInternet\Broxer";
 const PROG_ID: &str = "BroxerURL";
 
+const HTML_EXTENSIONS: [&str; 5] = [".htm", ".html", ".shtml", ".xht", ".xhtml"];
+
 pub fn register(router: &Path) -> io::Result<()> {
-    write_entries(&software()?, router)
+    write_entries(&software()?, router)?;
+    notify_associations_changed();
+    Ok(())
 }
 
 pub fn unregister() -> io::Result<()> {
-    remove_entries(&software()?)
+    remove_entries(&software()?)?;
+    notify_associations_changed();
+    Ok(())
+}
+
+fn notify_associations_changed() {
+    use windows_sys::Win32::UI::Shell::{SHCNE_ASSOCCHANGED, SHCNF_IDLIST, SHChangeNotify};
+    unsafe { SHChangeNotify(SHCNE_ASSOCCHANGED as i32, SHCNF_IDLIST, std::ptr::null(), std::ptr::null()) };
 }
 
 pub fn open_default_apps() -> io::Result<()> {
@@ -34,6 +45,9 @@ fn write_entries(software: &RegKey, router: &Path) -> io::Result<()> {
     prog.set_value("", &"Broxer URL")?;
     prog.create_subkey("DefaultIcon")?.0.set_value("", &icon)?;
     prog.create_subkey(r"shell\open\command")?.0.set_value("", &format!("\"{exe}\" \"%1\""))?;
+    let (app, _) = prog.create_subkey("Application")?;
+    app.set_value("ApplicationName", &"Broxer")?;
+    app.set_value("ApplicationIcon", &icon)?;
 
     let (client, _) = software.create_subkey(CLIENT_KEY)?;
     client.set_value("", &"Broxer")?;
@@ -46,6 +60,12 @@ fn write_entries(software: &RegKey, router: &Path) -> io::Result<()> {
     let (urls, _) = caps.create_subkey("URLAssociations")?;
     urls.set_value("http", &PROG_ID)?;
     urls.set_value("https", &PROG_ID)?;
+    // Default apps only lists browsers that also claim HTML files.
+    let (files, _) = caps.create_subkey("FileAssociations")?;
+    for ext in HTML_EXTENSIONS {
+        files.set_value(ext, &PROG_ID)?;
+    }
+    caps.create_subkey("Startmenu")?.0.set_value("StartMenuInternet", &"Broxer")?;
 
     software
         .create_subkey("RegisteredApplications")?
@@ -98,6 +118,21 @@ mod tests {
             .get_value("https")
             .unwrap();
         assert_eq!(https, "BroxerURL");
+        let html: String = root
+            .open_subkey(r"Clients\StartMenuInternet\Broxer\Capabilities\FileAssociations")
+            .unwrap()
+            .get_value(".html")
+            .unwrap();
+        assert_eq!(html, "BroxerURL");
+        let start_menu: String = root
+            .open_subkey(r"Clients\StartMenuInternet\Broxer\Capabilities\Startmenu")
+            .unwrap()
+            .get_value("StartMenuInternet")
+            .unwrap();
+        assert_eq!(start_menu, "Broxer");
+        let app_name: String =
+            root.open_subkey(r"Classes\BroxerURL\Application").unwrap().get_value("ApplicationName").unwrap();
+        assert_eq!(app_name, "Broxer");
         let registered: String =
             root.open_subkey("RegisteredApplications").unwrap().get_value("Broxer").unwrap();
         assert_eq!(registered, r"Software\Clients\StartMenuInternet\Broxer\Capabilities");

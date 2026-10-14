@@ -69,6 +69,6 @@ mod tests {
 
     #[test]
     fn detection_runs_and_excludes_broxer() {
-        assert!(installed_browsers().iter().all(|d| !d.name.eq_ignore_ascii_case("broxer")));
+        assert!(crate::detect::installed_browsers().iter().all(|d| !d.name.eq_ignore_ascii_case("broxer")));
     }
 }

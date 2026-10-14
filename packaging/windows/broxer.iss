@@ -21,6 +21,7 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 CloseApplications=yes
+ChangesAssociations=yes
 
 [Files]
 Source: "{#Bin}\broxer.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -34,6 +35,8 @@ Name: "{userprograms}\Broxer Settings"; Filename: "{app}\broxer-settings.exe"
 Root: HKCU; Subkey: "Software\Classes\BroxerURL"; ValueType: string; ValueData: "Broxer URL"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\BroxerURL\DefaultIcon"; ValueType: string; ValueData: "{app}\broxer.exe,0"
 Root: HKCU; Subkey: "Software\Classes\BroxerURL\shell\open\command"; ValueType: string; ValueData: """{app}\broxer.exe"" ""%1"""
+Root: HKCU; Subkey: "Software\Classes\BroxerURL\Application"; ValueType: string; ValueName: "ApplicationName"; ValueData: "Broxer"
+Root: HKCU; Subkey: "Software\Classes\BroxerURL\Application"; ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\broxer.exe,0"
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer"; ValueType: string; ValueData: "Broxer"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\DefaultIcon"; ValueType: string; ValueData: "{app}\broxer.exe,0"
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\shell\open\command"; ValueType: string; ValueData: """{app}\broxer.exe"""
@@ -42,6 +45,12 @@ Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities"; Va
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities"; ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\broxer.exe,0"
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\URLAssociations"; ValueType: string; ValueName: "http"; ValueData: "BroxerURL"
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\URLAssociations"; ValueType: string; ValueName: "https"; ValueData: "BroxerURL"
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\FileAssociations"; ValueType: string; ValueName: ".htm"; ValueData: "BroxerURL"
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\FileAssociations"; ValueType: string; ValueName: ".html"; ValueData: "BroxerURL"
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\FileAssociations"; ValueType: string; ValueName: ".shtml"; ValueData: "BroxerURL"
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\FileAssociations"; ValueType: string; ValueName: ".xht"; ValueData: "BroxerURL"
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\FileAssociations"; ValueType: string; ValueName: ".xhtml"; ValueData: "BroxerURL"
+Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities\Startmenu"; ValueType: string; ValueName: "StartMenuInternet"; ValueData: "Broxer"
 Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "Broxer"; ValueData: "Software\Clients\StartMenuInternet\Broxer\Capabilities"; Flags: uninsdeletevalue
 
 [Run]
