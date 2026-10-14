@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            asset: broxer-windows-x64.zip
+          - os: macos-latest
+            asset: broxer-macos-arm64.zip
+          - os: ubuntu-latest
+            asset: broxer-linux-x64.tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Linux GUI libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libgl1-mesa-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        run: |
+          cargo build --release -p broxer -p broxer-settings
+          Compress-Archive -Path target/release/broxer.exe, target/release/broxer-settings.exe -DestinationPath ${{ matrix.asset }}
+      - name: Package macOS
+        if: runner.os == 'macOS'
+        run: |
+          scripts/bundle-macos.sh
+          cd dist && zip -ry ../${{ matrix.asset }} "Broxer.app" "Broxer Settings.app"
+      - name: Package Linux
+        if: runner.os == 'Linux'
+        run: |
+          cargo build --release -p broxer -p broxer-settings
+          tar -czf ${{ matrix.asset }} -C target/release broxer broxer-settings
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --generate-notes broxer-*
+        env:
+          GH_TOKEN: ${{ github.token }}

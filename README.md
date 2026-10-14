@@ -4,20 +4,23 @@ Opens every link you click in the browser your rules choose — e.g. YouTube in 
 
 ## Install
 
-Build: `cargo build --release` (Rust 1.88+).
+Download the archive for your OS from [Releases](https://github.com/dmbsk/broxer/releases/latest), or build it yourself with `cargo build --release` (Rust 1.88+).
 
-**Windows**
-1. Copy `target/release/broxer.exe` and `broxer-settings.exe` to `%LOCALAPPDATA%\Programs\broxer\`.
+**Windows** (`broxer-windows-x64.zip`)
+1. Extract `broxer.exe` and `broxer-settings.exe` to `%LOCALAPPDATA%\Programs\broxer\`.
 2. Run `broxer-settings.exe`, set up rules, **Save**, **Register Broxer**.
 3. Click **Open Default apps** and choose Broxer as the web browser.
 
-**macOS**
-1. `scripts/bundle-macos.sh`, then move `dist/Broxer.app` and `dist/Broxer Settings.app` to `/Applications`.
-2. Open Broxer Settings, set up rules, **Save**, **Register Broxer**, confirm the macOS prompt.
+**macOS** (`broxer-macos-arm64.zip`, Apple Silicon)
+1. Move `Broxer.app` and `Broxer Settings.app` to `/Applications` (building: `scripts/bundle-macos.sh` writes them to `dist/`).
+2. The apps are unsigned: run `xattr -dr com.apple.quarantine /Applications/Broxer*.app` once.
+3. Open Broxer Settings, set up rules, **Save**, **Register Broxer**, confirm the macOS prompt.
 
-**Linux**
-1. Copy `target/release/broxer` and `broxer-settings` into the same directory (e.g. `~/.local/bin`).
+**Linux** (`broxer-linux-x64.tar.gz`)
+1. Extract `broxer` and `broxer-settings` into the same directory (e.g. `~/.local/bin`).
 2. Run `broxer-settings`, set up rules, **Save**, **Register Broxer** (sets the default via `xdg-settings`).
+
+Releasing: push a `v*` tag; the Release workflow builds and attaches all three archives.
 
 ## Config
 
