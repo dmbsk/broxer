@@ -6,7 +6,7 @@ use broxer_core::Browser;
 
 pub fn launch(browser: &Browser, url: &str) -> io::Result<()> {
     let path = Path::new(&browser.path);
-    if is_broxer(path) {
+    if is_broxer(path) || is_current_exe(path) {
         return Err(io::Error::other("refusing to open a link with Broxer itself"));
     }
     // Relative names (e.g. "firefox" from a Linux .desktop file) are resolved via PATH by spawn.
@@ -29,6 +29,11 @@ pub fn is_broxer(path: &Path) -> bool {
         || path
             .components()
             .any(|c| c.as_os_str().eq_ignore_ascii_case("Broxer.app"))
+}
+
+fn is_current_exe(path: &Path) -> bool {
+    let me = std::env::current_exe().and_then(std::fs::canonicalize);
+    matches!((me, std::fs::canonicalize(path)), (Ok(me), Ok(target)) if me == target)
 }
 
 #[cfg(target_os = "macos")]
@@ -79,6 +84,14 @@ mod tests {
     #[test]
     fn refuses_to_launch_broxer_itself() {
         let browser = Browser { path: "/opt/broxer/broxer".into(), args: vec![] };
+        let err = launch(&browser, "https://example.com").unwrap_err();
+        assert!(err.to_string().contains("Broxer itself"), "{err}");
+    }
+
+    #[test]
+    fn refuses_to_launch_the_running_executable_under_any_name() {
+        let me = std::env::current_exe().unwrap();
+        let browser = Browser { path: me.display().to_string(), args: vec![] };
         let err = launch(&browser, "https://example.com").unwrap_err();
         assert!(err.to_string().contains("Broxer itself"), "{err}");
     }

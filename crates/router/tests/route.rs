@@ -97,3 +97,30 @@ fn nothing_to_launch_is_logged() {
         s.log()
     );
 }
+
+#[test]
+fn rapidly_repeated_link_is_treated_as_a_loop() {
+    let s = Setup::new();
+    s.save(&s.config());
+    for _ in 0..2 {
+        s.route("https://github.com/loop", vec![]);
+    }
+    assert_eq!(received(&s.out("chrome")).as_deref(), Some("https://github.com/loop"));
+    std::thread::sleep(std::time::Duration::from_millis(500));
+    std::fs::remove_file(s.out("chrome")).unwrap();
+    s.route("https://github.com/loop", vec![]);
+    assert_not_received(&s.out("chrome"));
+    assert!(s.log().contains("loop"), "{}", s.log());
+}
+
+#[test]
+fn double_click_still_opens_twice() {
+    let s = Setup::new();
+    s.save(&s.config());
+    s.route("https://github.com/twice", vec![]);
+    assert!(received(&s.out("chrome")).is_some());
+    std::fs::remove_file(s.out("chrome")).unwrap();
+    s.route("https://github.com/twice", vec![]);
+    assert_eq!(received(&s.out("chrome")).as_deref(), Some("https://github.com/twice"));
+    assert_eq!(s.log(), "");
+}
