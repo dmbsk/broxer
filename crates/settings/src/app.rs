@@ -144,8 +144,8 @@ impl SettingsApp {
             text_field(ui, &mut self.test_url, 400.0);
         });
         if !self.test_url.trim().is_empty() {
-            ui.label(match self.form.to_config() {
-                Ok(config) => format!("Opens in {}", config.browser_for(&self.test_url)),
+            ui.label(match self.form.browser_for_test_link(&self.test_url) {
+                Ok(browser) => format!("Opens in {browser}"),
                 Err(e) => format!("Fix the settings first: {e}"),
             });
         }

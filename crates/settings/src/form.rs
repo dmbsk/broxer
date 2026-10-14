@@ -93,6 +93,12 @@ impl Form {
         Ok(config)
     }
 
+    pub fn browser_for_test_link(&self, link: &str) -> Result<String, String> {
+        let link = link.trim();
+        let url = if link.contains("://") { link.to_string() } else { format!("https://{link}") };
+        Ok(self.to_config()?.browser_for(&url).to_string())
+    }
+
     pub fn move_rule(&mut self, index: usize, up: bool) {
         let other = if up { index.checked_sub(1) } else { Some(index + 1) };
         if let Some(other) = other.filter(|&o| o < self.rules.len()) {
@@ -245,6 +251,14 @@ mod tests {
         assert_eq!(form.browser_names(), vec!["google-chrome", "google-chrome-2", "zen-browser"]);
         assert_eq!(form.fallback, "google-chrome");
         assert!(form.rules.is_empty());
+    }
+
+    #[test]
+    fn test_link_accepts_bare_domain() {
+        let form = Form::from_config(&config());
+        assert_eq!(form.browser_for_test_link("github.com/x"), Ok("chrome".into()));
+        assert_eq!(form.browser_for_test_link(" https://youtu.be/x "), Ok("zen".into()));
+        assert_eq!(form.browser_for_test_link("example.org"), Ok("zen".into()));
     }
 
     #[test]

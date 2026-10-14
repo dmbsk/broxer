@@ -34,7 +34,10 @@ fn parse_command(command: &str) -> Option<Browser> {
     let command = command.trim();
     let path = match command.strip_prefix('"') {
         Some(rest) => rest.split('"').next()?,
-        None => command.split_whitespace().next()?,
+        None => match command.to_ascii_lowercase().find(".exe") {
+            Some(end) => &command[..end + 4],
+            None => command.split_whitespace().next()?,
+        },
     };
     (!path.is_empty()).then(|| Browser { path: path.to_string(), args: vec![] })
 }
@@ -65,6 +68,14 @@ mod tests {
     #[test]
     fn empty_command_is_none() {
         assert_eq!(parse_command("  "), None);
+    }
+
+    #[test]
+    fn unquoted_command_with_spaces_keeps_whole_exe_path() {
+        let browser = parse_command(r"C:\Program Files\Internet Explorer\iexplore.exe").unwrap();
+        assert_eq!(browser.path, r"C:\Program Files\Internet Explorer\iexplore.exe");
+        let with_args = parse_command(r"C:\Program Files\Opera\opera.EXE --x").unwrap();
+        assert_eq!(with_args.path, r"C:\Program Files\Opera\opera.EXE");
     }
 
     #[test]
