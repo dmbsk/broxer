@@ -7,3 +7,9 @@ edition.workspace = true
 broxer-core.workspace = true
 broxer-platform.workspace = true
 dirs.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
