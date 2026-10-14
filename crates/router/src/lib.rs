@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use broxer_core::{Config, ConfigError};
@@ -14,7 +14,8 @@ pub struct Context<'a> {
 
 pub fn route(url: &str, ctx: &Context) {
     let log_dir = ctx.config_path.parent().unwrap_or(Path::new("."));
-    if is_looping(log_dir, url) {
+    let guard = LoopGuard::check(log_dir, url);
+    if guard.looping {
         let message = format!(
             "{url} came back to Broxer {LOOP_REPEATS} times in a row; a configured browser probably hands links to the default browser (Broxer). Stopped to avoid a loop."
         );
@@ -42,25 +43,41 @@ pub fn route(url: &str, ctx: &Context) {
 const LOOP_REPEATS: u32 = 3;
 const LOOP_WINDOW_MS: u128 = 2000;
 
-/// Records this URL; true when it is the LOOP_REPEATS-th arrival within LOOP_WINDOW_MS.
-fn is_looping(log_dir: &Path, url: &str) -> bool {
-    let marker = log_dir.join("last-route");
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis());
-    let previous = std::fs::read_to_string(&marker).unwrap_or_default();
-    let mut lines = previous.lines();
-    let (last_url, first_ms, count) = (
-        lines.next().unwrap_or(""),
-        lines.next().and_then(|l| l.parse::<u128>().ok()).unwrap_or(0),
-        lines.next().and_then(|l| l.parse::<u32>().ok()).unwrap_or(0),
-    );
-    let (first_ms, count) = if last_url == url && now.saturating_sub(first_ms) < LOOP_WINDOW_MS {
-        (first_ms, count + 1)
-    } else {
-        (now, 1)
-    };
-    let _ = std::fs::create_dir_all(log_dir);
-    let _ = std::fs::write(&marker, format!("{url}\n{first_ms}\n{count}\n"));
-    count >= LOOP_REPEATS
+/// Counts arrivals of the same URL within LOOP_WINDOW_MS. The marker is written on drop,
+/// after the browser has been started, because the write costs several ms on Windows.
+struct LoopGuard {
+    marker: PathBuf,
+    record: String,
+    looping: bool,
+}
+
+impl LoopGuard {
+    fn check(log_dir: &Path, url: &str) -> LoopGuard {
+        let marker = log_dir.join("last-route");
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis());
+        let previous = std::fs::read_to_string(&marker).unwrap_or_default();
+        let mut lines = previous.lines();
+        let (last_url, first_ms, count) = (
+            lines.next().unwrap_or(""),
+            lines.next().and_then(|l| l.parse::<u128>().ok()).unwrap_or(0),
+            lines.next().and_then(|l| l.parse::<u32>().ok()).unwrap_or(0),
+        );
+        let (first_ms, count) = if last_url == url && now.saturating_sub(first_ms) < LOOP_WINDOW_MS {
+            (first_ms, count + 1)
+        } else {
+            (now, 1)
+        };
+        LoopGuard { marker, record: format!("{url}\n{first_ms}\n{count}\n"), looping: count >= LOOP_REPEATS }
+    }
+}
+
+impl Drop for LoopGuard {
+    fn drop(&mut self) {
+        if let Some(dir) = self.marker.parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        let _ = std::fs::write(&self.marker, &self.record);
+    }
 }
 
 /// Ok(None): opened as configured. Ok(Some(warning)): opened in the fallback.

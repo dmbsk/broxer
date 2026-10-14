@@ -1,18 +1,21 @@
 mod common;
 
 use std::process::Command;
-use std::time::{Duration, Instant};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use common::{BROXER, Setup};
+use common::{BROXER, Setup, received};
 
 #[test]
 #[ignore = "timing test: cargo test --release -p broxer --test speed -- --ignored"]
-fn median_routing_time_is_within_budget() {
+fn median_time_from_router_start_to_browser_launch_is_within_budget() {
     let s = Setup::new();
     s.save(&s.config());
+    let out = s.out("chrome");
+    let started = format!("{}.started", out.display());
     let mut times: Vec<Duration> = (0..100)
         .map(|i| {
-            let start = Instant::now();
+            let _ = std::fs::remove_file(&out);
+            let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros();
             let status = Command::new(BROXER)
                 .arg(format!("https://github.com/{i}"))
                 .env("BROXER_CONFIG", s.config_path())
@@ -20,7 +23,9 @@ fn median_routing_time_is_within_budget() {
                 .status()
                 .unwrap();
             assert!(status.success());
-            start.elapsed()
+            assert!(received(&out).is_some(), "browser was not launched");
+            let launched: u128 = std::fs::read_to_string(&started).unwrap().parse().unwrap();
+            Duration::from_micros((launched - start) as u64)
         })
         .collect();
     times.sort();
