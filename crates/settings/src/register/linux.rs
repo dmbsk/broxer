@@ -37,10 +37,12 @@ fn run(program: &str, args: &[&str]) -> io::Result<()> {
     }
 }
 
+#[allow(dead_code)]
 fn remembered_default(_current: &str) -> Option<String> {
     todo!()
 }
 
+#[allow(dead_code)]
 fn restore_commands(_previous: &str) -> Vec<(&'static str, Vec<String>)> {
     todo!()
 }
