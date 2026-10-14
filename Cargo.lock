@@ -497,7 +497,7 @@ dependencies = [
 
 [[package]]
 name = "broxer"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "broxer-core",
  "broxer-platform",
@@ -509,7 +509,7 @@ dependencies = [
 
 [[package]]
 name = "broxer-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "tempfile",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "broxer-platform"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "broxer-core",
  "dirs",
@@ -531,7 +531,7 @@ dependencies = [
 
 [[package]]
 name = "broxer-settings"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "broxer-core",
  "broxer-platform",

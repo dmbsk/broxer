@@ -4,23 +4,23 @@ Opens every link you click in the browser your rules choose — e.g. YouTube in 
 
 ## Install
 
-Download the archive for your OS from [Releases](https://github.com/dmbsk/broxer/releases/latest), or build it yourself with `cargo build --release` (Rust 1.88+).
+Download the installer for your OS from [Releases](https://github.com/dmbsk/broxer/releases/latest), or build it yourself with `cargo build --release` (Rust 1.88+).
 
-**Windows** (`broxer-windows-x64.zip`)
-1. Extract `broxer.exe` and `broxer-settings.exe` to `%LOCALAPPDATA%\Programs\broxer\`.
-2. Run `broxer-settings.exe`, set up rules, **Save**, **Register Broxer**.
-3. Click **Open Default apps** and choose Broxer as the web browser.
+**Windows** (`broxer-setup-windows-x64.exe`)
+1. Run the installer. It installs per user (no admin), registers Broxer and adds **Broxer Settings** to the Start menu.
+2. On the last page keep both boxes ticked: set up rules in Settings and **Save**, then choose Broxer as the web browser in Default apps.
+3. Uninstall from *Settings → Apps*; this removes the registration too.
 
-**macOS** (`broxer-macos-arm64.zip`, Apple Silicon)
-1. Move `Broxer.app` and `Broxer Settings.app` to `/Applications` (building: `scripts/bundle-macos.sh` writes them to `dist/`).
+**macOS** (`broxer-macos-arm64.dmg`, Apple Silicon)
+1. Open the dmg and drag both apps onto **Applications**.
 2. The apps are unsigned: run `xattr -dr com.apple.quarantine /Applications/Broxer*.app` once.
 3. Open Broxer Settings, set up rules, **Save**, **Register Broxer**, confirm the macOS prompt.
 
-**Linux** (`broxer-linux-x64.tar.gz`)
-1. Extract `broxer` and `broxer-settings` into the same directory (e.g. `~/.local/bin`).
-2. Run `broxer-settings`, set up rules, **Save**, **Register Broxer** (sets the default via `xdg-settings`).
+**Linux** (`broxer_<version>_amd64.deb`)
+1. `sudo apt install ./broxer_<version>_amd64.deb`. Other distros: extract `broxer-linux-x64.tar.gz` into one directory (e.g. `~/.local/bin`).
+2. Run Broxer Settings, set up rules, **Save**, **Register Broxer** (sets the default via `xdg-settings`).
 
-Releasing: push a `v*` tag; the Release workflow builds and attaches all three archives.
+Releasing: bump `version` in `Cargo.toml`, then push the matching `v<version>` tag; the Release workflow builds the installers and archives.
 
 ## Config
 

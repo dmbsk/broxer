@@ -14,6 +14,9 @@ jobs:
   create:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Tag matches Cargo version
+        run: test "$GITHUB_REF_NAME" = "v$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
       - run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --generate-notes
 
   # Uploads straight to the release: workflow artifacts count against the account's storage quota.
@@ -21,13 +24,7 @@ jobs:
     needs: create
     strategy:
       matrix:
-        include:
-          - os: windows-latest
-            asset: broxer-windows-x64.zip
-          - os: macos-latest
-            asset: broxer-macos-arm64.zip
-          - os: ubuntu-latest
-            asset: broxer-linux-x64.tar.gz
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -37,17 +34,23 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev libgl1-mesa-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
       - name: Package Windows
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           cargo build --release -p broxer -p broxer-settings
-          Compress-Archive -Path target/release/broxer.exe, target/release/broxer-settings.exe -DestinationPath ${{ matrix.asset }}
+          choco install innosetup -y --no-progress
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" packaging\windows\broxer.iss
+          Compress-Archive -Path target/release/broxer.exe, target/release/broxer-settings.exe -DestinationPath dist/broxer-windows-x64.zip
       - name: Package macOS
         if: runner.os == 'macOS'
         run: |
           scripts/bundle-macos.sh
-          cd dist && zip -ry ../${{ matrix.asset }} "Broxer.app" "Broxer Settings.app"
+          cd dist && zip -ry broxer-macos-arm64.zip "Broxer.app" "Broxer Settings.app"
       - name: Package Linux
         if: runner.os == 'Linux'
         run: |
-          cargo build --release -p broxer -p broxer-settings
-          tar -czf ${{ matrix.asset }} -C target/release broxer broxer-settings
-      - run: gh release upload "${{ github.ref_name }}" "${{ matrix.asset }}" --repo "${{ github.repository }}"
+          packaging/linux/build-deb.sh
+          tar -czf dist/broxer-linux-x64.tar.gz -C target/release broxer broxer-settings
+      - name: Upload
+        shell: bash
+        run: gh release upload "${{ github.ref_name }}" dist/broxer* --repo "${{ github.repository }}"

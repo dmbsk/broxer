@@ -37,4 +37,9 @@ make_app "Broxer" broxer dev.dmbsk.broxer '  <key>LSUIElement</key><true/>
 
 make_app "Broxer Settings" broxer-settings dev.dmbsk.broxer-settings ''
 
-echo "Built dist/Broxer.app and dist/Broxer Settings.app — move both to /Applications."
+stage=target/dmg && rm -rf "$stage" && mkdir -p "$stage"
+cp -R "dist/Broxer.app" "dist/Broxer Settings.app" "$stage/"
+ln -s /Applications "$stage/Applications"
+hdiutil create -volname Broxer -srcfolder "$stage" -ov -format UDZO "dist/broxer-macos-arm64.dmg"
+
+echo "Built dist/Broxer.app, dist/Broxer Settings.app and dist/broxer-macos-arm64.dmg."
