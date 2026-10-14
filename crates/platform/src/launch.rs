@@ -39,6 +39,12 @@ fn is_current_exe(path: &Path) -> bool {
 #[cfg(target_os = "macos")]
 fn command(path: &Path, args: &[String], url: &str) -> Command {
     if path.extension().is_some_and(|ext| ext == "app") {
+        // `open --args` only reaches a freshly started app; the bundle binary forwards args to a running one.
+        if !args.is_empty()
+            && let Some(exe) = bundle_executable(path)
+        {
+            return direct(&exe, args, url);
+        }
         let mut command = Command::new("/usr/bin/open");
         command.arg("-a").arg(path).arg(url);
         if !args.is_empty() {
@@ -47,6 +53,13 @@ fn command(path: &Path, args: &[String], url: &str) -> Command {
         return command;
     }
     direct(path, args, url)
+}
+
+#[cfg(target_os = "macos")]
+fn bundle_executable(app: &Path) -> Option<std::path::PathBuf> {
+    let info = plist::Value::from_file(app.join("Contents/Info.plist")).ok()?;
+    let name = info.as_dictionary()?.get("CFBundleExecutable")?.as_string()?;
+    Some(app.join("Contents/MacOS").join(name))
 }
 
 #[cfg(not(target_os = "macos"))]

@@ -11,11 +11,20 @@ pub fn register(router: &Path) -> io::Result<()> {
     fs::create_dir_all(dir)?;
     fs::write(&path, desktop_entry(router))?;
     let _ = Command::new("update-desktop-database").arg(dir).status();
+    remember_current_default()?;
     run("xdg-settings", &["set", "default-web-browser", "broxer.desktop"])?;
     run("xdg-mime", &["default", "broxer.desktop", "x-scheme-handler/http", "x-scheme-handler/https"])
 }
 
 pub fn unregister() -> io::Result<()> {
+    let previous = previous_path()?;
+    if let Ok(name) = fs::read_to_string(&previous) {
+        for (program, args) in restore_commands(name.trim()) {
+            let args: Vec<&str> = args.iter().map(String::as_str).collect();
+            run(program, &args)?;
+        }
+        fs::remove_file(&previous)?;
+    }
     match fs::remove_file(desktop_path()?) {
         Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
         _ => Ok(()),
@@ -37,14 +46,33 @@ fn run(program: &str, args: &[&str]) -> io::Result<()> {
     }
 }
 
-#[allow(dead_code)]
-fn remembered_default(_current: &str) -> Option<String> {
-    todo!()
+fn previous_path() -> io::Result<PathBuf> {
+    dirs::config_dir()
+        .map(|d| d.join("broxer").join("previous-browser"))
+        .ok_or_else(|| io::Error::other("no config directory"))
 }
 
-#[allow(dead_code)]
-fn restore_commands(_previous: &str) -> Vec<(&'static str, Vec<String>)> {
-    todo!()
+fn remember_current_default() -> io::Result<()> {
+    let output = Command::new("xdg-settings").args(["get", "default-web-browser"]).output()?;
+    if let Some(current) = remembered_default(&String::from_utf8_lossy(&output.stdout)) {
+        let path = previous_path()?;
+        fs::create_dir_all(path.parent().expect("previous path has a parent"))?;
+        fs::write(path, current)?;
+    }
+    Ok(())
+}
+
+fn remembered_default(current: &str) -> Option<String> {
+    let current = current.trim();
+    (!current.is_empty() && current != "broxer.desktop").then(|| current.to_string())
+}
+
+fn restore_commands(previous: &str) -> Vec<(&'static str, Vec<String>)> {
+    let args = |a: &[&str]| a.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+    vec![
+        ("xdg-settings", args(&["set", "default-web-browser", previous])),
+        ("xdg-mime", args(&["default", previous, "x-scheme-handler/http", "x-scheme-handler/https"])),
+    ]
 }
 
 fn desktop_entry(router: &Path) -> String {
