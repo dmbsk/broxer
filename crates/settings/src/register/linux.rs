@@ -37,11 +37,11 @@ fn run(program: &str, args: &[&str]) -> io::Result<()> {
     }
 }
 
-fn remembered_default(current: &str) -> Option<String> {
+fn remembered_default(_current: &str) -> Option<String> {
     todo!()
 }
 
-fn restore_commands(previous: &str) -> Vec<(&'static str, Vec<String>)> {
+fn restore_commands(_previous: &str) -> Vec<(&'static str, Vec<String>)> {
     todo!()
 }
 
