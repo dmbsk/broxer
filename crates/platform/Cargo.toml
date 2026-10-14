@@ -1,0 +1,14 @@
+[package]
+name = "broxer-platform"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+broxer-core.workspace = true
+dirs.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+
+[dev-dependencies]
+tempfile.workspace = true
