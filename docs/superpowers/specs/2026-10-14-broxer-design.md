@@ -131,3 +131,13 @@ Single egui window:
 - Speed test: 100 router runs against the fake browser; fail if median exceeds 20 ms.
 - CI: GitHub Actions on Windows, macOS, Ubuntu — `cargo test`, `cargo clippy -- -D warnings`, release build.
 - Manual (README checklist): register, set default, click a YouTube and a GitHub link from another app on each OS. macOS and Linux end-to-end link handling are verified manually by the user.
+
+## Amendments (from planning, 2026-10-14)
+
+- A fourth crate, `crates/platform`, holds OS code shared by both binaries (config path, launching, browser detection, notices). `core` stays OS-free; registration lives in `settings`.
+- macOS launch uses `/usr/bin/open -a <App.app> <url> [--args ...]` instead of NSWorkspace: NSWorkspace launches asynchronously and the router would have to wait for the completion handler before exiting, which costs more than it saves.
+- macOS browser detection scans `/Applications` and `~/Applications` for bundles whose `Info.plist` lists `https` in `CFBundleURLTypes`, instead of calling `LSCopyApplicationURLsForURL` (avoids CoreServices FFI in the router).
+- macOS "Unregister" cannot unset a default browser; it tells the user to pick another browser in System Settings.
+- Environment overrides: `BROXER_CONFIG` replaces the config path; `BROXER_QUIET` suppresses popups (log only). Both exist for tests and scripting.
+- Starting the router with no URL opens Broxer Settings (macOS: after a 3 s wait for a URL Apple Event).
+- Rule domains are normalized on load: scheme, path, port, `*.` prefix, case, and trailing dot are stripped; internationalized names become punycode. A UTF-8 BOM at the start of the config file is ignored.
