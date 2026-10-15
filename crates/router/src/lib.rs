@@ -3,6 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use broxer_core::{Config, ConfigError};
 use broxer_platform::detect::Detected;
+use broxer_platform::last_route;
 use broxer_platform::launch::launch;
 use broxer_platform::notice::report;
 
@@ -43,19 +44,18 @@ pub fn route(url: &str, ctx: &Context) {
 const LOOP_REPEATS: u32 = 3;
 const LOOP_WINDOW_MS: u128 = 2000;
 
-/// Counts arrivals of the same URL within LOOP_WINDOW_MS. The marker is written on drop,
+/// Counts arrivals of the same URL within LOOP_WINDOW_MS. The record is written on drop,
 /// after the browser has been started, because the write costs several ms on Windows.
 struct LoopGuard {
-    marker: PathBuf,
+    dir: PathBuf,
     record: String,
     looping: bool,
 }
 
 impl LoopGuard {
     fn check(log_dir: &Path, url: &str) -> LoopGuard {
-        let marker = log_dir.join("last-route");
         let now = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis());
-        let previous = std::fs::read_to_string(&marker).unwrap_or_default();
+        let previous = last_route::read(log_dir);
         let mut lines = previous.lines();
         let (last_url, first_ms, count) = (
             lines.next().unwrap_or(""),
@@ -67,16 +67,17 @@ impl LoopGuard {
         } else {
             (now, 1)
         };
-        LoopGuard { marker, record: format!("{url}\n{first_ms}\n{count}\n"), looping: count >= LOOP_REPEATS }
+        LoopGuard {
+            dir: log_dir.to_path_buf(),
+            record: format!("{url}\n{first_ms}\n{count}\n"),
+            looping: count >= LOOP_REPEATS,
+        }
     }
 }
 
 impl Drop for LoopGuard {
     fn drop(&mut self) {
-        if let Some(dir) = self.marker.parent() {
-            let _ = std::fs::create_dir_all(dir);
-        }
-        let _ = std::fs::write(&self.marker, &self.record);
+        last_route::write(&self.dir, &self.record);
     }
 }
 

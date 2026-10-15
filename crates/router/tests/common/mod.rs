@@ -55,6 +55,12 @@ impl Setup {
     }
 }
 
+impl Drop for Setup {
+    fn drop(&mut self) {
+        broxer_platform::last_route::forget(self.dir.path());
+    }
+}
+
 pub fn received(out: &Path) -> Option<String> {
     let deadline = Instant::now() + Duration::from_secs(10);
     while Instant::now() < deadline {

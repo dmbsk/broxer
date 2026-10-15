@@ -38,6 +38,8 @@ Root: HKCU; Subkey: "Software\Classes\BroxerURL\shell\open\command"; ValueType: 
 Root: HKCU; Subkey: "Software\Classes\BroxerURL\Application"; ValueType: string; ValueName: "ApplicationName"; ValueData: "Broxer"
 Root: HKCU; Subkey: "Software\Classes\BroxerURL\Application"; ValueType: string; ValueName: "ApplicationIcon"; ValueData: "{app}\broxer.exe,0"
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer"; ValueType: string; ValueData: "Broxer"; Flags: uninsdeletekey
+; Loop-guard state written by broxer.exe.
+Root: HKCU; Subkey: "Software\Broxer"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\DefaultIcon"; ValueType: string; ValueData: "{app}\broxer.exe,0"
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\shell\open\command"; ValueType: string; ValueData: """{app}\broxer.exe"""
 Root: HKCU; Subkey: "Software\Clients\StartMenuInternet\Broxer\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "Broxer"

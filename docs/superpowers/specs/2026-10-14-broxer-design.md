@@ -4,7 +4,7 @@ Date: 2026-10-14
 
 ## Goal
 
-Broxer is a rule-based browser selector. It is registered as the OS default browser; every link clicked in another app goes to Broxer, which opens it in the browser chosen by user rules (e.g. YouTube → Zen, GitHub → Chrome). Routing must be imperceptible: ≤20 ms from router start to browser launch.
+Broxer is a rule-based browser selector. It is registered as the OS default browser; every link clicked in another app goes to Broxer, which opens it in the browser chosen by user rules (e.g. YouTube → Zen, GitHub → Chrome). Routing must be imperceptible: ≤13 ms from router start to browser launch. About 9.5 ms of that is out of reach: on Windows with Defender, starting a process with a not-recently-seen command line costs ~4.75 ms, and each click starts two (Broxer, then the browser), both with the URL.
 
 Platforms: Windows, macOS, Linux.
 
@@ -128,7 +128,7 @@ Single egui window:
 
 - `core` unit tests: exact/subdomain/lookalike matching, `www.`, case, ports, first-match-wins, fallback, malformed URL, non-http scheme, config validation errors, missing file.
 - Router integration test: run the real `broxer` binary with a temp config pointing at a fake-browser test binary that records its argv; assert the right browser and args received the URL. Platform glue (Apple Events, registry) sits behind small functions so routing is testable without it.
-- Speed test: 100 router runs against the fake browser; fail if median exceeds 20 ms.
+- Speed test: 100 router runs against the fake browser; fail if median exceeds 13 ms.
 - CI: GitHub Actions on Windows, macOS, Ubuntu — `cargo test`, `cargo clippy -- -D warnings`, release build.
 - Manual (README checklist): register, set default, click a YouTube and a GitHub link from another app on each OS. macOS and Linux end-to-end link handling are verified manually by the user.
 

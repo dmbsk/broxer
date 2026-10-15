@@ -31,5 +31,5 @@ fn median_time_from_router_start_to_browser_launch_is_within_budget() {
     times.sort();
     let median = times[times.len() / 2];
     println!("median {median:?}, fastest {:?}, slowest {:?}", times[0], times[99]);
-    assert!(median <= Duration::from_millis(20), "median {median:?}, slowest {:?}", times[99]);
+    assert!(median <= Duration::from_millis(13), "median {median:?}, slowest {:?}", times[99]);
 }
