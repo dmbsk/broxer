@@ -5,6 +5,8 @@ members = ["crates/core", "crates/platform", "crates/router", "crates/settings"]
 [workspace.package]
 version = "0.1.3"
 edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/dmbsk/broxer"
 
 [workspace.dependencies]
 broxer-core = { path = "crates/core" }

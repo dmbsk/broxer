@@ -23,7 +23,7 @@ Platforms: Windows, macOS, Linux.
 
 ## Architecture
 
-One Cargo workspace, private GitHub repo `dmbsk/broxer`:
+One Cargo workspace, GitHub repo `dmbsk/broxer`:
 
 ```
 crates/core/      config model, loading, validation, URL → browser matching. No OS calls.

@@ -1,5 +1,7 @@
 # Broxer
 
+> **Note:** This codebase is vibecoded: it was written almost entirely by an AI coding agent, with the author steering and testing. Review it accordingly before relying on it.
+
 Opens every link you click in the browser your rules choose — e.g. YouTube in Zen, GitHub in Chrome. Broxer registers as your default browser, picks a browser in a few milliseconds and exits.
 
 ## Install
@@ -62,3 +64,7 @@ browser = "chrome"
 3. Click a GitHub link → opens in Chrome.
 4. Click any other link → opens in the fallback.
 5. Break the config (e.g. delete a browser referenced by a rule) → link still opens, a popup explains the problem.
+
+## License
+
+Licensed under either of [Apache License 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT), at your option.
